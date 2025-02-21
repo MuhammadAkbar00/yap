@@ -1,7 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/*
 body {
   @apply bg-cover bg-center bg-no-repeat h-screen w-screen;
-  background-image: url("/bg-image.jpg"); /* Update path based on your image */
+  background-image: url("/bg-image.jpg"); 
 }
+  */

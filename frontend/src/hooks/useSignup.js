@@ -62,7 +62,6 @@ function handleInputErrors({
   confirmPassword,
   gender,
 }) {
-  console.log("running");
   if (!fullName || !username || !password || !confirmPassword || !gender) {
     toast.error("Please fill in all fields");
     return false;
