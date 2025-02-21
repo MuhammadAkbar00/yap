@@ -4,7 +4,6 @@ import generateTokenAndSetCookie from "../utils/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
-    console.log(req.body, "req");
     const { fullName, username, password, confirmPassword, gender } = req.body;
 
     if (password !== confirmPassword) {
@@ -50,7 +49,6 @@ export const signup = async (req, res) => {
     console.log("Error in signup controller", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
-  console.log("signupUser");
 };
 
 export const login = async (req, res) => {

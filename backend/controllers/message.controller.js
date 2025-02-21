@@ -32,7 +32,7 @@ export const sendMessage = async (req, res) => {
     // SocketIO functionality will go here
 
     // This will run in parallel
-    await Promise.all(conversation.save(), newMessage.save());
+    await Promise.all([conversation.save(), newMessage.save()]);
 
     res.status(201).json(newMessage);
   } catch (error) {
