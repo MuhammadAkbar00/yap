@@ -1,15 +1,51 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { BsSend } from "react-icons/bs";
 import useSendMessage from "../../hooks/useSendMessage";
+import { useSocketContext } from "../../context/SocketContext";
+import useConversation from "../../zustand/useConversation";
+import { useAuthContext } from "../../context/AuthContext";
+import { debounce } from "lodash";
 
 const MessageInput = () => {
   const [message, setMessage] = useState("");
   const { loading, sendMessage } = useSendMessage();
+  const { socket } = useSocketContext();
+  const { selectedConversation } = useConversation();
+  const { authUser } = useAuthContext();
+
+  // Debounced function to emit "stopTyping" event (fires only after user stops typing for 2s)
+  const debouncedStopTyping = useCallback(
+    debounce(() => {
+      socket?.emit("stopTyping", {
+        senderId: authUser._id,
+        receiverId: selectedConversation._id,
+      });
+    }, 2000), // Wait 2s before sending "stopTyping"
+    [socket, authUser._id, selectedConversation._id]
+  );
+
+  const handleTyping = () => {
+    // Emit "typing" immediately
+    socket?.emit("typing", {
+      senderId: authUser._id,
+      receiverId: selectedConversation._id,
+    });
+
+    // Reset the "stopTyping" debounce timer
+    debouncedStopTyping();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message) return;
+
+    // Immediately cancel any pending "stopTyping" event
+    debouncedStopTyping.cancel();
+    socket?.emit("stopTyping", {
+      senderId: authUser._id,
+      receiverId: selectedConversation._id,
+    });
+
     await sendMessage(message);
     setMessage("");
   };
@@ -19,10 +55,13 @@ const MessageInput = () => {
       <div className="w-full relative">
         <input
           type="text"
-          className="border text-sm rounded-lg block w-full p-2.5  bg-gray-700 border-gray-600 text-white"
+          className="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 text-white"
           placeholder="Send a message"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            handleTyping();
+          }}
         />
         <button
           type="submit"
@@ -38,4 +77,5 @@ const MessageInput = () => {
     </form>
   );
 };
+
 export default MessageInput;
