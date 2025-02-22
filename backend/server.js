@@ -10,24 +10,31 @@ import userRoutes from "./routes/user.routes.js";
 import connectToMongoDB from "./db/connectToMongoDB.js";
 import { app, server } from "./socket/socket.js";
 
-const PORT = process.env.PORT || 5000;
-
-const __dirname = path.resolve();
 dotenv.config();
+const PORT = process.env.PORT || 5000;
+const __dirname = path.resolve();
 
-app.use(express.json()); // to parse the incoming request with JSON payloads (from req.body)
+app.use(express.json()); // to parse incoming JSON payloads
 app.use(cookieParser()); // middleware to access cookies
+
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 
-app.use(express.static(path.join(__dirname, "/frontend/dist")));
+if (process.env.NODE_ENV === "production") {
+  // Serve built frontend files in production
+  app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-});
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+  });
+} else {
+  console.log("Development mode: Frontend is not served by backend");
+}
 
 server.listen(PORT, () => {
   connectToMongoDB();
-  console.log(`Server is running on port ${PORT}`);
+  console.log(
+    `Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`
+  );
 });
