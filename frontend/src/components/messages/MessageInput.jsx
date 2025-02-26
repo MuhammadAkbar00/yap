@@ -39,14 +39,23 @@ const MessageInput = () => {
     e.preventDefault();
     if (!message) return;
 
-    // Immediately cancel any pending "stopTyping" event
+    // Cancel pending stopTyping event
     debouncedStopTyping.cancel();
     socket?.emit("stopTyping", {
       senderId: authUser._id,
       receiverId: selectedConversation._id,
     });
 
+    // Send message to backend
     await sendMessage(message);
+
+    // Emit "newMessage" to update unread messages
+    socket?.emit("newMessage", {
+      senderId: authUser._id,
+      receiverId: selectedConversation._id, // The receiver’s ID
+    });
+
+    // Clear input field
     setMessage("");
   };
 
